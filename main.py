@@ -13,13 +13,14 @@ from fastapi.templating import Jinja2Templates
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.utils import gen_fake_card, face_preprocess
-from src.services import get_user_from_db, get_session_from_db, add_session_to_db, get_photo_from_db, add_photo_to_db
-from models.shemas import UserRead, UserCreate, User, Session, SessionCreate, SessionUserInput, PhotoCreate, CardData
-from src.auth.base_config import auth_backend, fastapi_users, current_user, verified_user
-from src.database import get_async_session
-from src.config import PATH_TO_PHOTOS
 from src.logging import logger_
+from src.config import PATH_TO_PHOTOS
+from src.database import get_async_session
+from src.services import get_user_from_db, get_session_from_db, add_session_to_db, get_photo_from_db, add_photo_to_db
+from src.utils import gen_fake_card, face_preprocess
+from src.auth.base_config import auth_backend, fastapi_users, current_user, verified_user
+
+from models.shemas import UserRead, UserCreate, User, Session, SessionCreate, SessionUserInput, PhotoCreate, CardData
 
 app = FastAPI(
     title='FakeCardAPI'
@@ -54,7 +55,9 @@ async def get_photo(file: UploadFile, user: User = Depends(verified_user),
     image.save(os.path.join(PATH_TO_PHOTOS, photo_name))  # save photo in static/photo/photo_name
 
     new_photo = PhotoCreate(photo_name=photo_name, user_id=user.id)
+
     res = await add_photo_to_db(new_photo, session)  # write to db user.id, photo_name
+
     logger_.info(f'user: {user.id} | add photo | {str(res)} | photo_name: {photo_name}')
     return res
 
@@ -62,6 +65,7 @@ async def get_photo(file: UploadFile, user: User = Depends(verified_user),
 @app.post("/session")
 async def create_session(new_session: SessionUserInput, user: User = Depends(verified_user),
                          session: AsyncSession = Depends(get_async_session)):
+
     data = {'user_id': user.id} | new_session.dict() | {"timestamp": datetime.utcnow().isoformat()}
 
     session_key = sha256(json.dumps(data, default=str).encode('utf-8')).hexdigest()
