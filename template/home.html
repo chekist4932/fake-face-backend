@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+
+{% block title %}Face Drawer{% endblock %}
+
+
+{% block navigate %}
+<ul class="flex gap-5 mr-10">
+    {% if not who %}
+    <li><a href="/registration">Registration</a></li>
+    <li><a href="/login">LogIn</a></li>
+    {% else %}
+    <li><a href="/logout">logout</a></li>
+    {% endif %}
+</ul>
+{% endblock %}
+
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Hello, world!</h1>
+</div>
+{% endblock %}
+

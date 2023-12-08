@@ -16,19 +16,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.logging import logger_
 from src.config import PATH_TO_PHOTOS
 from src.database import get_async_session
-from src.services import get_user_from_db, get_session_from_db, add_session_to_db, get_photo_from_db, add_photo_to_db
+from src.services import get_session_from_db, add_session_to_db, get_photo_from_db, add_photo_to_db
 from src.utils import gen_fake_card, face_preprocess
-from src.auth.base_config import auth_backend, fastapi_users, current_user, verified_user
+from src.auth.base_config import auth_backend, fastapi_users, verified_user
 
-from models.shemas import UserRead, UserCreate, User, Session, SessionCreate, SessionUserInput, PhotoCreate, CardData
+from models.shemas import UserRead, UserCreate, User, SessionCreate, SessionUserInput, PhotoCreate, CardData
+
+from src.pages.router import router as router_pages
 
 app = FastAPI(
     title='FakeCardAPI'
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="template")
-
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
     prefix="/auth",
@@ -40,6 +40,8 @@ app.include_router(
     prefix="/auth",
     tags=["Auth"],
 )
+
+app.include_router(router_pages)
 
 
 @app.post("/photo")
@@ -65,7 +67,6 @@ async def get_photo(file: UploadFile, user: User = Depends(verified_user),
 @app.post("/session")
 async def create_session(new_session: SessionUserInput, user: User = Depends(verified_user),
                          session: AsyncSession = Depends(get_async_session)):
-
     data = {'user_id': user.id} | new_session.dict() | {"timestamp": datetime.utcnow().isoformat()}
 
     session_key = sha256(json.dumps(data, default=str).encode('utf-8')).hexdigest()
@@ -78,25 +79,24 @@ async def create_session(new_session: SessionUserInput, user: User = Depends(ver
 
     return result
 
-
-@app.get("/pass", response_class=HTMLResponse)
-async def get_card(request: Request, user: User = Depends(verified_user),
-                   session: AsyncSession = Depends(get_async_session)):
-    session_data = await get_session_from_db(user.id, session)
-    photo_data = await get_photo_from_db(user.id, session)
-    if not session_data or not photo_data:
-        logger_.info(
-            f'user: {user.id} | NOT FOUND | session_data: {session_data.dict()} | photo_data: {photo_data.dict()}\n')
-        return templates.TemplateResponse('not_found.html', {"request": request})
-
-    full_name = f'{session_data.last_name} {session_data.name[0]}.{session_data.surname[0]}.'
-
-    card_data = CardData(**session_data.dict())
-
-    card_path = gen_fake_card(card_data, photo_data.photo_name)
-    card_path = card_path.split('\\')[-2:]
-    card_path = '/' + '/'.join(card_path)
-    logger_.info(f'user: {user.id} | card send | {session_data.session_key} | {photo_data.photo_name}\n')
-    return templates.TemplateResponse("card.html", {"request": request, "full_name": full_name, "card_path": card_path})
+# @app.get("/pass", response_class=HTMLResponse)
+# async def get_card(request: Request, user: User = Depends(verified_user),
+#                    session: AsyncSession = Depends(get_async_session)):
+#     session_data = await get_session_from_db(user.id, session)
+#     photo_data = await get_photo_from_db(user.id, session)
+#     if not session_data or not photo_data:
+#         logger_.info(
+#             f'user: {user.id} | NOT FOUND | session_data: {session_data.dict()} | photo_data: {photo_data.dict()}\n')
+#         return templates.TemplateResponse('404.html', {"request": request})
+#
+#     full_name = f'{session_data.last_name} {session_data.name[0]}.{session_data.surname[0]}.'
+#
+#     card_data = CardData(**session_data.dict())
+#
+#     card_path = gen_fake_card(card_data, photo_data.photo_name)
+#     card_path = card_path.split('\\')[-2:]
+#     card_path = '/' + '/'.join(card_path)
+#     logger_.info(f'user: {user.id} | card send | {session_data.session_key} | {photo_data.photo_name}\n')
+#     return templates.TemplateResponse("card.html", {"request": request, "full_name": full_name, "card_path": card_path})
 
 # {{ url_for('static', path='/') }}
