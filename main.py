@@ -1,10 +1,8 @@
 import os
-import io
 import uuid
 import json
 from datetime import datetime
 from hashlib import sha256
-import logging
 
 from PIL import Image
 
@@ -21,23 +19,13 @@ from models.shemas import UserRead, UserCreate, User, Session, SessionCreate, Se
 from src.auth.base_config import auth_backend, fastapi_users, current_user, verified_user
 from src.database import get_async_session
 from src.config import PATH_TO_PHOTOS
-
-# name = __name__
-# _log = logging.getLogger(name)
-# _log.setLevel(logging.DEBUG)
-# _log_handler = logging.FileHandler(filename=f'{name}.log',
-#                                    encoding='utf-8',
-#                                    mode="a")
-# _log_formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
-# _log_handler.setFormatter(_log_formatter)
-# _log.addHandler(_log_handler)
+from src.logging import logger_
 
 app = FastAPI(
-    title='Test API'
+    title='FakeCardAPI'
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
 templates = Jinja2Templates(directory="template")
 
 app.include_router(
@@ -53,38 +41,22 @@ app.include_router(
 )
 
 
-#
-@app.get("/")
-async def root(user: User = Depends(current_user)):
-    return {"message": f"Hello, {user.username}"}
-
-
 @app.post("/photo")
-async def get_photo(file: UploadFile, user: User = Depends(current_user),
+async def get_photo(file: UploadFile, user: User = Depends(verified_user),
                     session: AsyncSession = Depends(get_async_session)):
     content = await file.read()
-    # TO DO
     image: Image = face_preprocess(content)  # find face, cut  247 x 328
     if not image:
+        # TO DO
         ...
     photo_name = f'{uuid.uuid4()}.{image.format.lower()}'
-    print(photo_name)
+
     image.save(os.path.join(PATH_TO_PHOTOS, photo_name))  # save photo in static/photo/photo_name
+
     new_photo = PhotoCreate(photo_name=photo_name, user_id=user.id)
-    print(new_photo)
     res = await add_photo_to_db(new_photo, session)  # write to db user.id, photo_name
-    return res | {'operation': 'add_photo'}
-
-    # return {"message": f"Hello, {user.username}"}
-
-
-@app.get("/username/{username}")
-async def get_user(username: str, session: AsyncSession = Depends(get_async_session)):
-    print("in function")
-    result = await get_user_from_db(username, session=session)
-    print(result)
-    if result is not None:
-        return {f'{username}': result.dict()}
+    logger_.info(f'user: {user.id} | add photo | {str(res)} | photo_name: {photo_name}')
+    return res
 
 
 @app.post("/session")
@@ -96,7 +68,7 @@ async def create_session(new_session: SessionUserInput, user: User = Depends(ver
     data |= {'session_key': session_key}
 
     session_data = SessionCreate(**data)
-    print(f"Session created: {session_data}")
+    logger_.info(f'user: {user.id} | session created | {session_key}')
 
     result = await add_session_to_db(session_data, session)
 
@@ -108,36 +80,19 @@ async def get_card(request: Request, user: User = Depends(verified_user),
                    session: AsyncSession = Depends(get_async_session)):
     session_data = await get_session_from_db(user.id, session)
     photo_data = await get_photo_from_db(user.id, session)
-    print(session_data)
-    print(photo_data)
     if not session_data or not photo_data:
+        logger_.info(
+            f'user: {user.id} | NOT FOUND | session_data: {session_data.dict()} | photo_data: {photo_data.dict()}\n')
         return templates.TemplateResponse('not_found.html', {"request": request})
 
     full_name = f'{session_data.last_name} {session_data.name[0]}.{session_data.surname[0]}.'
 
     card_data = CardData(**session_data.dict())
-    print(card_data)
 
-    # TO DO
     card_path = gen_fake_card(card_data, photo_data.photo_name)
     card_path = card_path.split('\\')[-2:]
     card_path = '/' + '/'.join(card_path)
-    # return templates.TemplateResponse("card.html", {"request": request, "full_name": full_name})
+    logger_.info(f'user: {user.id} | card send | {session_data.session_key} | {photo_data.photo_name}\n')
     return templates.TemplateResponse("card.html", {"request": request, "full_name": full_name, "card_path": card_path})
 
 # {{ url_for('static', path='/') }}
-
-
-# async def get_user(tg_id: int, session: AsyncSession) -> User_:
-#     print('get')
-#     query = select(user_).where(user_.c.tg_id == tg_id)
-#     result = await session.execute(query)
-#     result = result.first()
-#     return result
-
-
-# @app.post("/post_user/{tg_id}")
-# async def get_user(new_user: CreateUser, session: AsyncSession = Depends(get_async_session)):
-#     print("in function")
-#     result = await add_user_to_db(new_user, session)
-#     return result

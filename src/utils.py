@@ -9,8 +9,7 @@ from src.config import PATH_TO_CARD_SOURCE, PATH_TO_PHOTOS, PATH_TO_CARDS
 
 # 1051 x 685
 
-# font_file = "../../card_source/bahnschrift.ttf"
-font_file = "../static/card_source/bahnschrift.ttf"
+font_file = os.path.join(PATH_TO_CARD_SOURCE, 'bahnschrift.ttf')
 font = ImageFont.truetype(font_file, size=35)
 font.set_variation_by_name('SemiBold')
 font_2 = ImageFont.truetype(font_file, size=22)

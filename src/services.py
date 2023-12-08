@@ -9,6 +9,7 @@ from fastapi_users.db import SQLAlchemyUserDatabase
 from src.database import get_async_session
 from models.models import user as user_table, session_ as session_table, photo_ as photo_table, User
 from models.shemas import UserRead, Session, SessionCreate, Photo, PhotoCreate
+from src.logging import logger_
 
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
@@ -20,18 +21,10 @@ async def get_user_from_db(username: str, session: AsyncSession) -> UserRead or 
     result = await session.execute(query)
     result = result.mappings().first()
     if result is not None:
-        return UserRead(**result)
-
-
-async def add_session_to_db(new_session: SessionCreate, session: AsyncSession):
-    stmt = insert(session_table).values(**new_session.dict())
-    try:
-        await session.execute(stmt)
-        await session.commit()
-    except DatabaseError as error:
-        print(error)
-        return {"status": "error"}
-    return {"status": "success"}
+        result = UserRead(**result)
+        logger_.info(f'user: {result.id} | get from db | username: {result.username}')
+        return result
+    logger_.info(f'user: {username} | get from db | not found')
 
 
 async def get_session_from_db(user_id: int, session: AsyncSession) -> Session or None:
@@ -40,7 +33,10 @@ async def get_session_from_db(user_id: int, session: AsyncSession) -> Session or
     result = await session.execute(query)
     result = result.mappings().first()
     if result is not None:
-        return Session(**result)
+        result = Session(**result)
+        logger_.info(f'user: {result.user_id} | get session from db | session_key: {result.session_key}')
+        return result
+    logger_.info(f'user: {user_id} | get session from db | not found')
 
 
 async def get_photo_from_db(user_id: int, session: AsyncSession) -> Photo or None:
@@ -48,7 +44,23 @@ async def get_photo_from_db(user_id: int, session: AsyncSession) -> Photo or Non
     result = await session.execute(query)
     result = result.mappings().first()
     if result is not None:
-        return Photo(**result)
+        result = Photo(**result)
+        logger_.info(f'user: {result.user_id} | get photo from db | photo_name: {result.photo_name}')
+        return result
+    logger_.info(f'user: {user_id} | get photo from db | not found')
+
+
+async def add_session_to_db(new_session: SessionCreate, session: AsyncSession):
+    stmt = insert(session_table).values(**new_session.dict())
+    try:
+        await session.execute(stmt)
+        await session.commit()
+    except DatabaseError as error:
+        logger_.info(
+            f'user: {new_session.user_id} | add session to db | session_key: {new_session.session_key} | error: {error}')
+        return {"status": "error"}
+    logger_.info(f'user: {new_session.user_id} | add session to db | {new_session.session_key}')
+    return {"status": "success"}
 
 
 async def add_photo_to_db(new_photo: PhotoCreate, session: AsyncSession):
@@ -57,8 +69,10 @@ async def add_photo_to_db(new_photo: PhotoCreate, session: AsyncSession):
         await session.execute(stmt)
         await session.commit()
     except DatabaseError as error:
-        print(error)
+        logger_.info(
+            f'user: {new_photo.user_id} | add photo to db | photo_name: {new_photo.photo_name} | error: {error}')
         return {"status": "error"}
+    logger_.info(f'user: {new_photo.user_id} | add photo to db | photo_name: {new_photo.photo_name}')
     return {"status": "success"}
 
 # async def add_user_to_db(new_user: CreateUser, session: AsyncSession):
