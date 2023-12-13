@@ -6,11 +6,13 @@
 
 {% block navigate %}
 <ul class="flex gap-5 mr-10">
-    {% if not who %}
+    {% if not user %}
     <li><a href="/registration">Registration</a></li>
     <li><a href="/login">LogIn</a></li>
     {% else %}
-    <li><a href="/logout">logout</a></li>
+    <form action="/auth/logout" method="post">
+        <button type="submit" value="" class="btn-link">Logout</button>
+    </form>
     {% endif %}
 </ul>
 {% endblock %}
@@ -18,7 +20,13 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Hello, world!</h1>
+    {% if user.is_verified %}
+    <h1>Hello, {{ user.username }}!</h1>
+    <a href="/">Set card data</a>
+    <a href="/">Set photo</a>
+    {% else %}
+    <h1>Hello, stranger!</h1>
+    {% endif %}
 </div>
 {% endblock %}
 

@@ -1,26 +1,10 @@
-import os
-import uuid
-import json
-from datetime import datetime
-from hashlib import sha256
-
-from PIL import Image
-
-from fastapi import FastAPI, Request, Depends, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
-from sqlalchemy.ext.asyncio import AsyncSession
+from src.auth.base_config import auth_backend, fastapi_users
 
-from src.logging import logger_
-from src.config import PATH_TO_PHOTOS
-from src.database import get_async_session
-from src.services import get_session_from_db, add_session_to_db, get_photo_from_db, add_photo_to_db
-from src.utils import gen_fake_card, face_preprocess
-from src.auth.base_config import auth_backend, fastapi_users, verified_user
-
-from models.shemas import UserRead, UserCreate, User, SessionCreate, SessionUserInput, PhotoCreate, CardData
+from models.shemas import UserRead, UserCreate
 
 from src.pages.router import router as router_pages
 
@@ -29,6 +13,7 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
     prefix="/auth",
@@ -43,41 +28,18 @@ app.include_router(
 
 app.include_router(router_pages)
 
+origins = [
+    "http://localhost:3000",
+]
 
-@app.post("/photo")
-async def get_photo(file: UploadFile, user: User = Depends(verified_user),
-                    session: AsyncSession = Depends(get_async_session)):
-    content = await file.read()
-    image: Image = face_preprocess(content)  # find face, cut  247 x 328
-    if not image:
-        # TO DO
-        ...
-    photo_name = f'{uuid.uuid4()}.{image.format.lower()}'
-
-    image.save(os.path.join(PATH_TO_PHOTOS, photo_name))  # save photo in static/photo/photo_name
-
-    new_photo = PhotoCreate(photo_name=photo_name, user_id=user.id)
-
-    res = await add_photo_to_db(new_photo, session)  # write to db user.id, photo_name
-
-    logger_.info(f'user: {user.id} | add photo | {str(res)} | photo_name: {photo_name}')
-    return res
-
-
-@app.post("/session")
-async def create_session(new_session: SessionUserInput, user: User = Depends(verified_user),
-                         session: AsyncSession = Depends(get_async_session)):
-    data = {'user_id': user.id} | new_session.dict() | {"timestamp": datetime.utcnow().isoformat()}
-
-    session_key = sha256(json.dumps(data, default=str).encode('utf-8')).hexdigest()
-    data |= {'session_key': session_key}
-
-    session_data = SessionCreate(**data)
-    logger_.info(f'user: {user.id} | session created | {session_key}')
-
-    result = await add_session_to_db(session_data, session)
-
-    return result
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS", "DELETE", "PATCH", "PUT"],
+    allow_headers=["Content-Type", "Set-Cookie", "Access-Control-Allow-Headers", "Access-Control-Allow-Origin",
+                   "Authorization"],
+)
 
 # @app.get("/pass", response_class=HTMLResponse)
 # async def get_card(request: Request, user: User = Depends(verified_user),

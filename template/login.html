@@ -1,26 +1,16 @@
 {% extends "base.html" %}
 
-{% block head %}
-<script>
-    const tryLogin = () => {
-        const login = document.getElementById('exampleInputEmail1').value;
-        const pswd = document.getElementById('exampleInputPassword1').value;
-</script>
-{% endblock %}
-{% block title %}Face Drawer - registration{% endblock %}
+{% block title %}Face Drawer - login{% endblock %}
 
 {% block page_content %}
-<form>
-    <div class="form-group">
-        <label for="exampleInputEmail1">Email address</label>
-        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
-               placeholder="Enter email">
-        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-    </div>
-    <div class="form-group">
-        <label for="exampleInputPassword1">Password</label>
-        <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-    </div>
-    <button onclick="tryLogin()" type="submit" class="btn btn-primary">Submit</button>
+<form action="/auth/login" method="post">
+  <fieldset style="background: #f6f8ff; border: 2px solid #4238ca;">
+    <legend>Login</legend>
+    <input type="text" name="username" placeholder="Login"><br /><br />
+    <input type="text" name="password" placeholder="Password"><br /><br />
+    <button type="submit">Submit</button>
+  </fieldset>
+
 </form>
+
 {% endblock %}
