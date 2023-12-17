@@ -186,11 +186,12 @@ cython_debug/
 # alembic versions
 migrations/versions
 
+
 # static files
 static
 
 # template
-template/index.html
+template/
 
 # notes
 test.py
