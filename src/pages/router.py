@@ -3,10 +3,11 @@ import uuid
 import json
 from datetime import datetime
 from hashlib import sha256
+from base64 import b64encode
 
 from PIL import Image
 
-from fastapi import APIRouter, Request, Depends, UploadFile
+from fastapi import APIRouter, Request, Depends, UploadFile, status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import JSONResponse
 
@@ -35,8 +36,8 @@ async def get_home_page():
 
 
 @router.get('/users/me')
-async def get_home_page(user: User_shame = Depends(current_active_user)):
-    return user
+async def get_auth_status(user: User_shame = Depends(current_active_user)):
+    return JSONResponse(content={'username': user.username}, status_code=status.HTTP_200_OK)
 
 
 @router.post("/photo")
@@ -75,7 +76,7 @@ async def create_session(new_session: SessionUserInput, user: User = Depends(ver
     return result
 
 
-@router.get("/pass")
+@router.get("/pass_local")
 async def get_card_page(request: Request, user: User_shame = Depends(verified_user),
                         session: AsyncSession = Depends(get_async_session)):
     session_data = await get_session_from_db(user.id, session)
@@ -94,3 +95,25 @@ async def get_card_page(request: Request, user: User_shame = Depends(verified_us
     card_path = '/' + '/'.join(card_path)
     logger_.info(f'user: {user.id} | card send | {session_data.session_key} | {photo_data.photo_name}\n')
     return templates.TemplateResponse("card.html", {"request": request, "full_name": full_name, "card_path": card_path})
+
+
+@router.get("/pass")
+async def get_card_page(user: User_shame = Depends(current_active_user),
+                        session: AsyncSession = Depends(get_async_session)):
+    session_data = await get_session_from_db(user.id, session)
+    photo_data = await get_photo_from_db(user.id, session)
+    if not session_data or not photo_data:
+        logger_.info(
+            f'/PASS ERROR | data: {user} | session : {session_data}\n')
+        return JSONResponse(content={"detail": 'Create session and/or Upload photo'}, status_code=status.HTTP_404_NOT_FOUND)
+
+    full_name = f'{session_data.last_name} {session_data.name[0]}.{session_data.surname[0]}.'
+
+    card_data = CardData(**session_data.dict())
+
+    card_path = gen_fake_card(card_data, photo_data.photo_name)
+    encoded_string = b64encode(open(card_path, "rb").read())
+    card_in_base = 'data:image/png;base64,' + encoded_string.decode('utf-8')
+
+    # logger_.info(f'user: {user.id} | card send | {session_data.session_key} | {photo_data.photo_name}\n')
+    return JSONResponse(content={"full_name": full_name, 'card': card_in_base}, status_code=status.HTTP_200_OK)

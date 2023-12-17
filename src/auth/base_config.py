@@ -1,19 +1,19 @@
 from fastapi_users import FastAPIUsers
-from fastapi_users.authentication import CookieTransport, BearerTransport, AuthenticationBackend
+from fastapi_users.authentication import BearerTransport, AuthenticationBackend
 from fastapi_users.authentication import JWTStrategy
 
 from src.auth.manager import get_user_manager
 from models.models import User
-from src.config import SECRET_AUTH
+from src.config import PUBLIC_KEY_PATH, PRIVATE_KEY_PATH, ALGORITHM
 
 bearer_transport = BearerTransport(tokenUrl="auth/login")
 
 
-# cookie_transport = CookieTransport(cookie_name="fefu-card", cookie_max_age=3600)
-
-
 def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET_AUTH, lifetime_seconds=3600)
+    return JWTStrategy(secret=PRIVATE_KEY_PATH.read_text(),
+                       lifetime_seconds=3600,
+                       algorithm=ALGORITHM,
+                       public_key=PUBLIC_KEY_PATH.read_text())
 
 
 auth_backend = AuthenticationBackend(
