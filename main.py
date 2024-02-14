@@ -2,10 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from src.models.shemas import UserRead, UserCreate
 from src.auth.base_config import auth_backend, fastapi_users
-
-from models.shemas import UserRead, UserCreate
-
 from src.pages.router import router as router_pages
 
 app = FastAPI(
@@ -28,9 +26,15 @@ app.include_router(
 
 app.include_router(router_pages)
 
+# origins = [
+#     "http://localhost:3000",
+#     "https://0f5d-77-35-31-20.ngrok-free.app/",
+# ]
 origins = [
-    "http://localhost:3000",
+    "*",
 ]
+
+
 
 app.add_middleware(
     CORSMiddleware,

@@ -21,6 +21,11 @@ ALGORITHM = os.environ.get("ALGORITHM")
 PRIVATE_KEY_PATH = BASE_DIR / "certs" / "private.pem"
 PUBLIC_KEY_PATH = BASE_DIR / "certs" / "public.pem"
 
-PATH_TO_PHOTOS = os.environ.get('PATH_TO_PHOTOS')
-PATH_TO_CARD_SOURCE = os.environ.get('PATH_TO_CARD_SOURCE')
-PATH_TO_CARDS = os.environ.get('PATH_TO_CARDS')
+PATH_TO_PHOTOS = BASE_DIR / "static" / "photos"
+PATH_TO_CARD_SOURCE = BASE_DIR / "static" / "card_source"
+PATH_TO_CARDS = BASE_DIR / "static" / "cards"
+
+
+# PATH_TO_PHOTOS = os.environ.get('PATH_TO_PHOTOS')
+# PATH_TO_CARD_SOURCE = os.environ.get('PATH_TO_CARD_SOURCE')
+# PATH_TO_CARDS = os.environ.get('PATH_TO_CARDS')

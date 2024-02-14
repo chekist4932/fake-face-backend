@@ -1,10 +1,9 @@
-import os
-import sys
 import io
+import os
 
 from PIL import Image, ImageDraw, ImageFont
 
-from models.shemas import CardData
+from src.models.shemas import CardData
 from src.config import PATH_TO_CARD_SOURCE, PATH_TO_PHOTOS, PATH_TO_CARDS
 
 # 1051 x 685

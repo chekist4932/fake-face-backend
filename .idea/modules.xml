@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Fake_face.iml" filepath="$PROJECT_DIR$/.idea/Fake_face.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/fake-face-backend.iml" filepath="$PROJECT_DIR$/.idea/fake-face-backend.iml" />
     </modules>
   </component>
 </project>

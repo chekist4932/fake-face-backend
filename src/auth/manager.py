@@ -3,10 +3,10 @@ from typing import Optional
 from fastapi import Depends, Request, Response
 from fastapi_users import BaseUserManager, IntegerIDMixin
 
-from models.models import User
-from src.services import get_user_db
+from src.models.models import User
 from src.config import PRIVATE_KEY_PATH
 from src.logging import logger_
+from src.services import get_user_db
 
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):

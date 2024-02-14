@@ -7,8 +7,8 @@ from sqlalchemy.exc import DatabaseError
 from fastapi_users.db import SQLAlchemyUserDatabase
 
 from src.database import get_async_session
-from models.models import user as user_table, session_ as session_table, photo_ as photo_table, User
-from models.shemas import UserRead, Session, SessionCreate, Photo, PhotoCreate
+from src.models.models import user as user_table, session_ as session_table, photo_ as photo_table, User
+from src.models.shemas import UserRead, Session, SessionCreate, Photo, PhotoCreate
 from src.logging import logger_
 
 
@@ -58,9 +58,9 @@ async def add_session_to_db(new_session: SessionCreate, session: AsyncSession):
     except DatabaseError as error:
         logger_.info(
             f'user: {new_session.user_id} | add session to db | session_key: {new_session.session_key} | error: {error}')
-        return {"status": "error"}
+        raise ValueError({"detail": "error"})
     logger_.info(f'user: {new_session.user_id} | add session to db | {new_session.session_key}')
-    return {"status": "success"}
+    return {"detail": "success"}
 
 
 async def add_photo_to_db(new_photo: PhotoCreate, session: AsyncSession):
@@ -71,7 +71,7 @@ async def add_photo_to_db(new_photo: PhotoCreate, session: AsyncSession):
     except DatabaseError as error:
         logger_.info(
             f'user: {new_photo.user_id} | add photo to db | photo_name: {new_photo.photo_name} | error: {error}')
-        return {"status": "error"}
+        raise ValueError({"detail": "error"})
     logger_.info(f'user: {new_photo.user_id} | add photo to db | photo_name: {new_photo.photo_name}')
     return {"status": "success"}
 
