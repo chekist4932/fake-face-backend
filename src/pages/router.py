@@ -24,7 +24,7 @@ router = APIRouter(
     tags=['Pages']
 )
 
-templates = Jinja2Templates(directory="template")
+# templates = Jinja2Templates(directory="template")
 
 
 @router.get('/welcome')

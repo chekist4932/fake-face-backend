@@ -191,11 +191,10 @@ migrations/versions
 static
 
 # template
-/template/
+template/
 
 # notes
 test.py
 
 # certs
 certs/
-
