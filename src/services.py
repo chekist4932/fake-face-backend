@@ -9,7 +9,7 @@ from fastapi_users.db import SQLAlchemyUserDatabase
 from src.database import get_async_session
 from src.models.models import user as user_table, session_ as session_table, photo_ as photo_table, User
 from src.models.shemas import UserRead, Session, SessionCreate, Photo, PhotoCreate
-from src.logging import logger_
+from src.my_logging import logger_
 
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):

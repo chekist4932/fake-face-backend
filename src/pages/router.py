@@ -15,7 +15,7 @@ from src.models.shemas import User as User_shame, CardData, User, SessionCreate,
 from src.auth.base_config import current_active_user, verified_user
 from src.config import PATH_TO_PHOTOS
 from src.database import get_async_session
-from src.logging import logger_
+from src.my_logging import logger_
 from src.services import get_session_from_db, get_photo_from_db, add_session_to_db, add_photo_to_db
 from src.utils import gen_fake_card, face_preprocess
 
