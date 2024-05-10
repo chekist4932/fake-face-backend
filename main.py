@@ -32,6 +32,7 @@ app.include_router(router_pages)
 # ]
 origins = [
     "http://213.139.210.94",
+    "http://fefu-face.ru/"
 ]
 
 
