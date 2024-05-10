@@ -31,8 +31,9 @@ app.include_router(router_pages)
 #     "https://0f5d-77-35-31-20.ngrok-free.app/",
 # ]
 origins = [
-    "http://213.139.210.94",
-    "http://fefu-face.ru/"
+    "*"
+    # "http://213.139.210.94",
+    # "http://fefu-face.ru/"
 ]
 
 
