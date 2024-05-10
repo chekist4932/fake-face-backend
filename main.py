@@ -6,6 +6,8 @@ from src.models.shemas import UserRead, UserCreate
 from src.auth.base_config import auth_backend, fastapi_users
 from src.pages.router import router as router_pages
 
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+
 app = FastAPI(
     title='FakeCardAPI',
     ssl_keyfile="/etc/letsencrypt/live/fefu-face.ru/privkey.pem",
@@ -38,7 +40,7 @@ origins = [
     # "http://fefu-face.ru/"
 ]
 
-
+app.add_middleware(HTTPSRedirectMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
