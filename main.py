@@ -7,7 +7,9 @@ from src.auth.base_config import auth_backend, fastapi_users
 from src.pages.router import router as router_pages
 
 app = FastAPI(
-    title='FakeCardAPI'
+    title='FakeCardAPI',
+    ssl_keyfile="/etc/letsencrypt/live/fefu-face.ru/privkey.pem",
+    ssl_certfile="/etc/letsencrypt/live/fefu-face.ru/fullchain.pem"
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
