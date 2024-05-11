@@ -6,14 +6,11 @@ from src.models.shemas import UserRead, UserCreate
 from src.auth.base_config import auth_backend, fastapi_users
 from src.pages.router import router as router_pages
 
-# from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 
 app = FastAPI(
     title='FakeCardAPI',
     docs_url=None,
     redoc_url=None
-    # ssl_keyfile="/etc/letsencrypt/live/fefu-face.ru/privkey.pem",
-    # ssl_certfile="/etc/letsencrypt/live/fefu-face.ru/fullchain.pem"
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -32,17 +29,10 @@ app.include_router(
 
 app.include_router(router_pages)
 
-# origins = [
-#     "http://localhost:3000",
-#     "https://0f5d-77-35-31-20.ngrok-free.app/",
-# ]
 origins = [
-    "*"
-    # "http://213.139.210.94",
-    # "http://fefu-face.ru/"
+    "http://fefu-face.ru/"
 ]
 
-# app.add_middleware(HTTPSRedirectMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
@@ -52,25 +42,3 @@ app.add_middleware(
     allow_headers=["Content-Type", "Set-Cookie", "Access-Control-Allow-Headers", "Access-Control-Allow-Origin",
                    "Authorization"],
 )
-
-# @app.get("/pass", response_class=HTMLResponse)
-# async def get_card(request: Request, user: User = Depends(verified_user),
-#                    session: AsyncSession = Depends(get_async_session)):
-#     session_data = await get_session_from_db(user.id, session)
-#     photo_data = await get_photo_from_db(user.id, session)
-#     if not session_data or not photo_data:
-#         logger_.info(
-#             f'user: {user.id} | NOT FOUND | session_data: {session_data.dict()} | photo_data: {photo_data.dict()}\n')
-#         return templates.TemplateResponse('404.html', {"request": request})
-#
-#     full_name = f'{session_data.last_name} {session_data.name[0]}.{session_data.surname[0]}.'
-#
-#     card_data = CardData(**session_data.dict())
-#
-#     card_path = gen_fake_card(card_data, photo_data.photo_name)
-#     card_path = card_path.split('\\')[-2:]
-#     card_path = '/' + '/'.join(card_path)
-#     logger_.info(f'user: {user.id} | card send | {session_data.session_key} | {photo_data.photo_name}\n')
-#     return templates.TemplateResponse("card.html", {"request": request, "full_name": full_name, "card_path": card_path})
-
-# {{ url_for('static', path='/') }}
