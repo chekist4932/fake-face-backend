@@ -18,13 +18,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
-    prefix="/auth",
+    prefix="/api/auth",
     tags=["Auth"],
 )
 
 app.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
-    prefix="/auth",
+    prefix="/api/auth",
     tags=["Auth"],
 )
 

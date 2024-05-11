@@ -20,7 +20,7 @@ from src.services import get_session_from_db, get_photo_from_db, add_session_to_
 from src.utils import gen_fake_card, face_preprocess
 
 router = APIRouter(
-    prefix='',
+    prefix='/api',
     tags=['Pages']
 )
 
