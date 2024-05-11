@@ -9,7 +9,9 @@ from src.pages.router import router as router_pages
 # from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 
 app = FastAPI(
-    title='FakeCardAPI'
+    title='FakeCardAPI',
+    docs_url=None,
+    redoc_url=None
     # ssl_keyfile="/etc/letsencrypt/live/fefu-face.ru/privkey.pem",
     # ssl_certfile="/etc/letsencrypt/live/fefu-face.ru/fullchain.pem"
 )
